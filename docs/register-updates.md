@@ -1,15 +1,27 @@
 # Updating the callsign register
 
-The bot never downloads or parses a PDF. Its only register input is `data/callsigns.json`. PDF formats can change, so updates are a reviewed task, optionally performed with Codex.
+The bot never downloads or parses a PDF. Its only register input is `data/callsigns.json`. These instructions are for the agent performing a requested data update. Inspect each new PDF's actual format; use temporary extraction tools as needed, without adding a maintained importer or automatic refresh to the bot.
 
 ## Update procedure
 
-1. Visit https://www.ira.is/kallmerki/ and follow the current kallmerkjaskrá link. Check the date printed in the document, rather than assuming the download date is the register date.
-2. Ask Codex to inspect the PDF and update the JSON using this schema. Include all listed suffixes, including one-letter and special entries, even though they must not be suggested. Occupancy is independent of digit. Include placeholder prefixes such as `TFn` and `TF#`.
-3. Review every page, annotations, and the diff against the previous register. Resolve extraction artifacts and investigate removed suffixes before accepting the update. Cross-check counts and the first/last entries of each column and page. Text extraction alone can merge column headings into suffixes.
-4. Update `register_date`, `source_url`, `source_sha256`, `reviewed_on`, and review notes. Check ÍRA's guidance for special exclusions too. Keep `occupied_suffixes` sorted and unique. Do not use an empty or partial list.
-5. Run `.venv/bin/pytest`. Review and update source-specific regression cases when the register genuinely changes. Tests cannot prove that a PDF was transcribed completely.
-6. Commit the reviewed JSON and recreate the container: `docker compose up -d --force-recreate elmar`. Test `/kallmerki athuga vidskeyti:IRA` and an unlisted suffix in Discord. Retain the old JSON in Git for rollback.
+1. **Discover the source.** Open https://www.ira.is/kallmerki/ and follow its current kallmerkjaskrá link rather than reusing the JSON's old PDF URL. Download the PDF into temporary storage and verify it opens as a PDF. Record the source URL, SHA-256 of the downloaded bytes, and date printed in the document. The document date is `register_date`; today's date is `reviewed_on`.
+2. **Transcribe all pages.** Preserve the existing JSON while preparing a candidate. Extract the complete list and inspect rendered pages, including every column, annotation, and page boundary. Account for every source row; record per-page row counts and the total distinct suffix count. If the source cannot be fetched or a row remains ambiguous, report the specific blocker and retain the existing register.
+3. **Normalize suffixes.** Strip the TF prefix and digit or placeholder, uppercase the suffix, and deduplicate across digits. Include all listed suffixes, including one-letter and special entries. Treat placeholder prefixes such as `TFn` and `TF#` as occupied. Resolve annotations visually: for example, the initial PDF's `WA*` means the suffix `WA`. Follow the current document's evidence rather than assuming future annotations mean the same thing.
+4. **Reconcile the candidate.** Compare old and new occupied/excluded sets. Recheck every removal against the source, since a missed column can falsely free an occupied suffix. Verify additions and column/page boundaries against rendered pages. Read the current guidance for special exclusions and update `excluded_suffixes` from that evidence. Preserve known exclusions unless the new source justifies changing them. Finish this step only when every row and every removal is accounted for.
+5. **Write and validate.** Write sorted, unique arrays and update provenance fields and review notes in `data/callsigns.json`. Keep the schema below. Run `.venv/bin/pytest` (install the development environment using the README if needed). Change source-specific regression expectations only when the new source establishes the change. Inspect `git diff --check` and the JSON diff. Tests cannot prove that a PDF was transcribed completely; source review remains required.
+6. **Report the result.** State the register date, PDF URL, row counts, distinct suffix count, added/removed suffixes, exclusion changes, and checks run. If the source is unchanged, report that rather than manufacturing a data change. Keep PDFs and extraction tools out of the repository. Commit or deploy only when requested by the user or included in the current task's scope.
+
+The update is complete when the JSON loads through `Registry.load`, all source rows and removals are reconciled, tests pass, and the result report includes provenance and changes. Report any incomplete verification explicitly.
+
+## Applying an update to a running bot
+
+After a validated update, recreate the container when deployment is requested:
+
+```sh
+docker compose up -d --force-recreate elmar
+```
+
+Check logs for successful command registration. A manual Discord check can use `/kallmerki athuga vidskeyti:IRA` and a suffix verified as unlisted in the new snapshot. State whether in-server checks were actually performed. Retain the previous JSON in Git for rollback.
 
 Suggested Codex request:
 
