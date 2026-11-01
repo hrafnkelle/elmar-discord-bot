@@ -44,4 +44,10 @@ To run locally, export `DISCORD_TOKEN` and `DISCORD_GUILD_ID`, then run `.venv/b
 
 `registry.py` owns validation and selection, `messages.py` owns response wording, and `bot.py` owns Discord interactions. Add separate command groups for future propagation, geomagnetic storm, and event features. There is no message-content monitoring or AI service in this version.
 
-See [project decisions](docs/project-decisions.md). This repository is local; no GitHub remote is configured yet.
+See [project decisions](docs/project-decisions.md).
+
+## License
+
+The project's code and documentation are licensed under the [MIT License](LICENSE).
+
+The callsign register in `data/callsigns.json` is derived from [ÍRA's callsign register](https://www.ira.is/kallmerki/), based on Fjarskiptastofa data. The MIT license does not grant rights to third-party source material; any applicable rights remain with their respective holders. Source provenance is recorded in the JSON.

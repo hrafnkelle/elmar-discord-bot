@@ -7,6 +7,7 @@ name = "elmar-bot"
 version = "0.1.0"
 description = "Icelandic amateur radio callsign helper for Discord"
 requires-python = ">=3.12"
+license = {file = "LICENSE"}
 dependencies = ["discord.py==2.7.1"]
 
 [project.optional-dependencies]
