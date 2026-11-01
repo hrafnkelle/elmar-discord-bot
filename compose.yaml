@@ -1,0 +1,28 @@
+services:
+  elmar:
+    build: .
+    init: true
+    restart: unless-stopped
+    environment:
+      DISCORD_TOKEN: ${DISCORD_TOKEN:?Set DISCORD_TOKEN in .env}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?Set DISCORD_GUILD_ID in .env}
+      ELMAR_REGISTER_PATH: /app/data/callsigns.json
+    volumes:
+      - type: bind
+        source: ./data/callsigns.json
+        target: /app/data/callsigns.json
+        read_only: true
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
