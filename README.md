@@ -6,6 +6,7 @@ Elmar is named for the amateur radio tradition of mentoring newly licensed opera
 
 ## Commands
 
+- `/skipanir` — list the bot's registered slash commands and their descriptions, visible only to the requester. The list is generated from the command tree, so new commands appear automatically after registration.
 - `/kallmerki athuga vidskeyti:IRA` — check a suffix; `TF3IRA` also works. Occupied suffixes reply **Ekki laust**, regardless of digit.
 - `/kallmerki velja` — suggest a random three-letter suffix.
 - `/kallmerki velja lengd:2` — suggest a two-letter suffix.

@@ -60,6 +60,25 @@ class Elmar(discord.Client):
         self.fof2 = FoF2Monitor()
         self.fof2_task: asyncio.Task | None = None
         self.tree.add_command(FoF2Commands(self.fof2), guild=self.guild)
+        self.tree.add_command(app_commands.Command(
+            name="skipanir", description="Sýna skipanir Elmars", callback=self.list_commands), guild=self.guild)
+
+    async def list_commands(self, interaction: discord.Interaction):
+        commands = sorted((command for command in self.tree.walk_commands(guild=self.guild)
+                           if isinstance(command, app_commands.Command)), key=lambda command: command.qualified_name)
+        pages = []
+        text = "**Skipanir Elmars**\n"
+        for command in commands:
+            line = f"• `/{command.qualified_name}` — {command.description}\n"
+            if len(text) + len(line) > 2000:
+                pages.append(text.rstrip())
+                text = ""
+            text += line
+        pages.append(text.rstrip())
+        await interaction.response.send_message(pages[0], ephemeral=True,
+                                                allowed_mentions=discord.AllowedMentions.none())
+        for page in pages[1:]:
+            await interaction.followup.send(page, ephemeral=True, allowed_mentions=discord.AllowedMentions.none())
 
     async def setup_hook(self):
         commands = await self.tree.sync(guild=self.guild)
