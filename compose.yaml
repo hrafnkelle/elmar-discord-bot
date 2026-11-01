@@ -7,6 +7,9 @@ services:
       DISCORD_TOKEN: ${DISCORD_TOKEN:?Set DISCORD_TOKEN in .env}
       DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?Set DISCORD_GUILD_ID in .env}
       ELMAR_REGISTER_PATH: /app/data/callsigns.json
+      ELMAR_K_CHANNEL_ID: ${ELMAR_K_CHANNEL_ID:-}
+      ELMAR_K_THRESHOLD: ${ELMAR_K_THRESHOLD:-5}
+      ELMAR_K_STATE_PATH: /app/state/kindex.sqlite3
     volumes:
       - type: bind
         source: ./data/callsigns.json
@@ -14,6 +17,7 @@ services:
         read_only: true
         bind:
           create_host_path: false
+      - kindex-state:/app/state
     read_only: true
     tmpfs:
       - /tmp
@@ -26,3 +30,6 @@ services:
       options:
         max-size: 10m
         max-file: "3"
+
+volumes:
+  kindex-state:
