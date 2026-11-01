@@ -34,20 +34,24 @@ def test_kindex_command_private_cached_bilingual_and_no_mentions():
     asyncio.run(run())
 
 
-def test_both_command_groups_register_and_poller_closes(tmp_path):
+def test_all_command_groups_register_and_pollers_close(tmp_path):
     async def run():
         async with Elmar(registry(), 123, KIndexConfig(str(tmp_path / "state.sqlite3"))) as client:
             commands = client.tree.get_commands(guild=client.guild)
-            assert {c.name for c in commands} == {"kallmerki", "kindex"}
+            assert {c.name for c in commands} == {"kallmerki", "kindex", "fof2"}
             payload = next(c for c in commands if c.name == "kindex").to_dict(client.tree)
             assert payload["options"][0]["name"] == "nuna"
+            fof2_payload = next(c for c in commands if c.name == "fof2").to_dict(client.tree)
+            assert fof2_payload["options"][0]["name"] == "nuna"
             assert client.intents.value == 0
             client.tree.sync = AsyncMock(return_value=commands)
             client.kindex.run = AsyncMock()
             await client.setup_hook()
             assert client.kindex_task is not None
+            assert client.fof2_task is not None
             # Cancel the task waiting for Discord readiness on context exit.
         assert client.kindex_task.cancelled()
+        assert client.fof2_task.cancelled()
     asyncio.run(run())
 
 

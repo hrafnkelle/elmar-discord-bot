@@ -14,6 +14,8 @@ from elmar.registry import Registry
 from elmar.kindex import Reading
 from elmar.kindex_discord import KIndexCommands, reading_text
 from elmar.kindex_service import KIndexConfig, KIndexMonitor
+from elmar.fof2 import FoF2Monitor
+from elmar.fof2_discord import FoF2Commands
 
 Language = Literal["íslenska", "English"]
 log = logging.getLogger(__name__)
@@ -55,12 +57,20 @@ class Elmar(discord.Client):
         self.kindex_task: asyncio.Task | None = None
         if self.kindex:
             self.tree.add_command(KIndexCommands(self.kindex), guild=self.guild)
+        self.fof2 = FoF2Monitor()
+        self.fof2_task: asyncio.Task | None = None
+        self.tree.add_command(FoF2Commands(self.fof2), guild=self.guild)
 
     async def setup_hook(self):
         commands = await self.tree.sync(guild=self.guild)
         log.info("Registered %d command group(s)", len(commands))
         if self.kindex:
             self.kindex_task = asyncio.create_task(self.poll_kindex(), name="leirvogur-kindex")
+        self.fof2_task = asyncio.create_task(self.poll_fof2(), name="iceland-fof2")
+
+    async def poll_fof2(self):
+        await self.wait_until_ready()
+        await self.fof2.run()
 
     async def poll_kindex(self):
         await self.wait_until_ready()
@@ -74,6 +84,10 @@ class Elmar(discord.Client):
                            allowed_mentions=discord.AllowedMentions.none(), suppress_embeds=True)
 
     async def close(self):
+        if self.fof2_task:
+            self.fof2_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await self.fof2_task
         if self.kindex_task:
             self.kindex_task.cancel()
             with suppress(asyncio.CancelledError):

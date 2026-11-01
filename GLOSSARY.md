@@ -17,3 +17,10 @@ _Avoid_: Leirvogur Kp
 
 **Provisional local K-index**:
 A local K value published using a near-real-time calculation procedure that may differ from the formal IAGA procedure. A provisional value is a reported observation, not a forecast.
+
+**Critical frequency (foF2)**:
+The ordinary-mode vertical critical frequency of the ionosphere's F2 layer, expressed in MHz. It differs from the maximum usable frequency for a particular oblique radio path.
+_Avoid_: MUF, TEC
+
+**Model foF2 estimate**:
+An estimated critical frequency at a specified location and valid time, derived from a model informed by ionosonde observations. It is distinct from a direct observation made by an ionosonde at that location.

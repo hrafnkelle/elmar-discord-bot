@@ -4,11 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "elmar-bot"
-version = "0.2.0"
-description = "Icelandic amateur radio callsign and local geomagnetic activity helper for Discord"
+version = "0.3.0"
+description = "Icelandic amateur radio callsign, geomagnetic activity, and ionospheric conditions helper"
 requires-python = ">=3.12"
 license = {file = "LICENSE"}
-dependencies = ["discord.py==2.7.1", "aiohttp>=3.9,<4"]
+dependencies = [
+    "discord.py==2.7.1",
+    "aiohttp>=3.9,<4",
+    "numpy>=1.26,<3",
+    "h5py>=3.11,<4",
+    "hdf5plugin>=5,<8",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10"]
