@@ -26,6 +26,15 @@ def test_unusual_and_page_boundary_entries_are_occupied(registry, suffix):
     assert registry.status(suffix)[1] == "occupied"
 
 
+@pytest.mark.parametrize("suffix", [
+    "ASH", "CU", "EE", "HKB", "HV", "IR", "KEX", "KFP", "MJP", "OSO",
+    "PAS", "PQ", "RT", "SH", "SP", "TF", "UT", "WLF", "WPR", "YA",
+])
+def test_november_2026_additions_are_occupied(registry, suffix):
+    # Includes WLF, printed under V, and TF, which is itself a valid suffix.
+    assert registry.status(suffix) == (suffix, "occupied")
+
+
 @pytest.mark.parametrize("value", ["TF0ABC", "A", "WARD", "YOTA", "ABCD"])
 def test_restricted_inputs_are_never_available(registry, value):
     assert registry.status(value)[1] != "unlisted"
