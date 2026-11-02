@@ -13,6 +13,9 @@ Elmar is named for the amateur radio tradition of mentoring newly licensed opera
 - Both commands accept `tungumal:English`. Replies default to Icelandic and are visible only to the person invoking the command.
 - `/kindex nuna` — show the latest published provisional local K-index at Leirvogur, its UTC observation interval, graph and source. This reply is visible only to the requester and also accepts `tungumal:English`. Callsign replies remain private.
 - `/fof2 nuna` — show KC2G's estimated ionospheric critical frequency near Reykjavík in MHz, with model valid time and map link. Only the requester sees the reply. Use `tungumal:English` for English.
+- `/qrz callsign:TF3IRA` — privately look up a callsign on QRZ. Replies use `[callsign](https://www.qrz.com/db/TF3IRA) - firstname lastname - addr2 country`; missing callsigns reply `Fann ekki kallmerki á qrz.com`.
+
+Set `QRZ_USERNAME` and `QRZ_PASSWORD` in `.env` to enable QRZ lookups, then recreate the bot with `docker compose up -d --build`. The bot uses the [QRZ XML API](https://www.qrz.com/docs/xml/current_spec.html), caches its session key and renews expired sessions. It displays the returned name and location fields, including when a non-subscriber response contains those fields and a subscription notice. Missing name or location fields stay blank. Login or service failures produce a retry message. Allow outbound HTTPS to `xmldata.qrz.com`. When running locally, export these variables along with the Discord settings.
 
 `/kindex nuna` and `/fof2 nuna` default to a concise value, time and graph/map link. Add `itarlegt:true` to either command for explanations, full source details and check times (plus model age/coordinates for foF2). Stale-data and source-failure warnings appear in both modes. Both modes reply privately; scheduled K-index alerts keep their existing format.
 

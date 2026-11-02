@@ -16,6 +16,8 @@ from elmar.kindex_discord import KIndexCommands, reading_text
 from elmar.kindex_service import KIndexConfig, KIndexMonitor
 from elmar.fof2 import FoF2Monitor
 from elmar.fof2_discord import FoF2Commands
+from elmar.qrz import QRZClient
+from elmar.qrz_discord import QRZCommands
 
 Language = Literal["íslenska", "English"]
 log = logging.getLogger(__name__)
@@ -47,7 +49,8 @@ class Callsigns(app_commands.Group):
 
 
 class Elmar(discord.Client):
-    def __init__(self, registry: Registry, guild_id: int, kindex_config: KIndexConfig | None = None):
+    def __init__(self, registry: Registry, guild_id: int, kindex_config: KIndexConfig | None = None,
+                 qrz: QRZClient | None = None):
         super().__init__(intents=discord.Intents.none(), allowed_mentions=discord.AllowedMentions.none())
         self.tree = app_commands.CommandTree(self)
         self.guild = discord.Object(id=guild_id)
@@ -60,6 +63,10 @@ class Elmar(discord.Client):
         self.fof2 = FoF2Monitor()
         self.fof2_task: asyncio.Task | None = None
         self.tree.add_command(FoF2Commands(self.fof2), guild=self.guild)
+        self.qrz_commands = QRZCommands(qrz or QRZClient())
+        self.tree.add_command(app_commands.Command(
+            name="qrz", description="Fletta upp kallmerki á qrz.com", callback=self.qrz_commands.lookup),
+            guild=self.guild)
         self.tree.add_command(app_commands.Command(
             name="skipanir", description="Sýna skipanir Elmars", callback=self.list_commands), guild=self.guild)
 
@@ -135,7 +142,8 @@ def main():
         kindex_config = KIndexConfig.from_env()
     except (OSError, ValueError, TypeError) as error:
         raise SystemExit(f"Invalid bot configuration: {error}") from error
-    Elmar(registry, int(guild), kindex_config).run(token, log_handler=None)
+    qrz = QRZClient(os.environ.get("QRZ_USERNAME", "").strip(), os.environ.get("QRZ_PASSWORD", ""))
+    Elmar(registry, int(guild), kindex_config, qrz).run(token, log_handler=None)
 
 
 if __name__ == "__main__":

@@ -43,7 +43,7 @@ def test_all_command_groups_register_and_pollers_close(tmp_path):
     async def run():
         async with Elmar(registry(), 123, KIndexConfig(str(tmp_path / "state.sqlite3"))) as client:
             commands = client.tree.get_commands(guild=client.guild)
-            assert {c.name for c in commands} == {"kallmerki", "kindex", "fof2", "skipanir"}
+            assert {c.name for c in commands} == {"kallmerki", "kindex", "fof2", "skipanir", "qrz"}
             payload = next(c for c in commands if c.name == "kindex").to_dict(client.tree)
             assert payload["options"][0]["name"] == "nuna"
             fof2_payload = next(c for c in commands if c.name == "fof2").to_dict(client.tree)

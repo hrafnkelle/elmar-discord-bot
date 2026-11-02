@@ -41,6 +41,14 @@ def test_discord_registration_payload_and_sync():
             length = next(p for p in choose["options"] if p["name"] == "lengd")
             assert {c["value"] for c in length["choices"]} == {2, 3}
             assert client.intents.value == 0
+            qrz = client.tree.get_command("qrz", guild=client.guild).to_dict(client.tree)
+            assert qrz["options"][0]["name"] == "callsign"
+            assert qrz["options"][0]["required"] is True
+            client.qrz_commands.client.lookup = AsyncMock(return_value=None)
+            interaction = SimpleNamespace(response=SimpleNamespace(defer=AsyncMock()),
+                                          followup=SimpleNamespace(send=AsyncMock()))
+            await client.tree.get_command("qrz", guild=client.guild)._do_call(interaction, {"callsign": "TF3HX"})
+            assert interaction.followup.send.call_args.args[0] == "Fann ekki kallmerki á qrz.com"
             client.tree.sync = AsyncMock(return_value=commands)
             await client.setup_hook()
             client.tree.sync.assert_awaited_once_with(guild=client.guild)
@@ -54,7 +62,7 @@ def test_skipanir_is_private_and_tracks_new_nested_commands(tmp_path):
             interaction = SimpleNamespace(response=SimpleNamespace(send_message=AsyncMock()), followup=SimpleNamespace(send=AsyncMock()))
             await command._do_call(interaction, {})
             first = interaction.response.send_message.call_args
-            for name in ("skipanir", "kallmerki athuga", "kallmerki velja", "kindex nuna", "fof2 nuna"):
+            for name in ("skipanir", "kallmerki athuga", "kallmerki velja", "kindex nuna", "fof2 nuna", "qrz"):
                 assert f"`/{name}`" in first.args[0]
             assert first.kwargs["ephemeral"] is True
             assert first.kwargs["allowed_mentions"].to_dict() == {"parse": []}
