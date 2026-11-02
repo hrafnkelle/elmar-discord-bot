@@ -31,6 +31,11 @@ def test_kindex_command_private_cached_bilingual_and_no_mentions():
             assert "k_lrv1a.gif" in args.args[0]
             assert args.kwargs["ephemeral"] is True
             assert args.kwargs["allowed_mentions"].to_dict() == {"parse": []}
+            assert "HF" not in args.args[0]
+            await group.current.callback(group, interaction, language, itarlegt=True)
+            detailed = interaction.response.send_message.call_args
+            assert "HF" in detailed.args[0] and "k_lrv1a.txt" in detailed.args[0]
+            assert detailed.kwargs["ephemeral"] is True
     asyncio.run(run())
 
 

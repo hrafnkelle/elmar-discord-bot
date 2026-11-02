@@ -31,7 +31,7 @@ Source investigation: [Leirvogur numerical data research](research/leirvogur-k-i
 6. Alert event: **settled — increases to values >= the configured threshold**, not one notification per high-activity episode. With the default threshold of 5, `4 -> 5` alerts, `5 -> 5` does not, `5 -> 6` alerts, `6 -> 5` does not. Startup, missing intervals, recovery and revisions follow round 3 below.
 7. Presentation: **settled — user approved the example below**, including the short HF explanation, provisional status, observation interval, graph and source links.
 
-Example private reply, using hypothetical example data (not a live report):
+Example detailed private reply (`itarlegt:true`), using hypothetical example data (not a live report):
 
 > **K-stuðull í Leirvogi: 6 af 9**
 >
@@ -75,3 +75,7 @@ Delivery uses a durable processed-interval cursor recorded before a send attempt
 The current bot uses a single configured server, private slash replies, no gateway intents and disabled mentions by default. It has no source polling or persistent alert state. Compose makes the root filesystem and callsign register read-only, with only temporary storage available otherwise. Persistent alert state needs explicit durable storage; both K-index and callsign queries reply privately.
 
 These are design inputs, not decisions to change existing configuration. No role, channel, live alert or deployment has been created by this interview.
+
+## Query output detail
+
+The query defaults to the value, UTC interval and graph link, retaining stale/source warnings. The optional boolean `itarlegt` includes the explanation, full source information and check time. Both modes are private. Scheduled channel alerts retain the full format.

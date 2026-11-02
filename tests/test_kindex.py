@@ -150,7 +150,7 @@ def test_optional_channel_configuration():
 def test_public_message_languages_staleness_and_graph():
     reading = Reading(START + timedelta(hours=21), 6)
     for language in ("is", "en"):
-        text = reading_text(reading, language=language, now=reading.end)
+        text = reading_text(reading, language=language, now=reading.end, detailed=True)
         assert "6" in text and "UTC" in text and "k_lrv1a.gif" in text
         assert "k_lrv1a.txt" in text and "HF" in text
         assert "⚠️" not in text
@@ -159,3 +159,16 @@ def test_public_message_languages_staleness_and_graph():
     assert "hækkar í 6" in reading_text(reading, alert=True, now=reading.end)
     assert "k_lrv1a.gif" in reading_text(None)
     assert "aukinnar" not in reading_text(Reading(reading.end, 1), now=reading.end)
+
+
+def test_query_defaults_to_short_output_but_keeps_warnings():
+    reading = Reading(START + timedelta(hours=21), 6)
+    for language in ("is", "en"):
+        short = reading_text(reading, language=language, now=reading.end)
+        assert "6" in short and "UTC" in short and "k_lrv1a.gif" in short
+        assert "HF" not in short and "k_lrv1a.txt" not in short
+        assert len(short) < 200
+        warnings = reading_text(reading, language=language, now=reading.end + timedelta(hours=4), source_error=True)
+        assert warnings.count("⚠️") == 2
+    # Scheduled alerts keep their existing explanation.
+    assert "HF" in reading_text(reading, now=reading.end, alert=True)

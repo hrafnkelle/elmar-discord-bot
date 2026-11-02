@@ -99,7 +99,7 @@ def test_freshness_including_short_nowcast_horizon():
 def test_bilingual_estimate_label_links_age_and_stale_warning():
     estimate = FoF2Estimate(3.7, VALID)
     for language, title in [("is", "Áætluð foF2"), ("en", "Estimated foF2")]:
-        text = estimate_text(estimate, language=language, now=NOW, checked_at=NOW)
+        text = estimate_text(estimate, language=language, now=NOW, checked_at=NOW, detailed=True)
         assert title in text and "Reykjavík" in text
         assert "MHz" in text and "2026-11-01 22:30 UTC" in text
         assert "64.15" in text and "21.94" in text
@@ -121,10 +121,28 @@ def test_query_is_private_bilingual_and_does_not_fetch():
             assert expected in args.args[0]
             assert args.kwargs["ephemeral"] is True
             assert args.kwargs["allowed_mentions"].to_dict() == {"parse": []}
+            assert "HF" not in args.args[0]
+            await group.current.callback(group, interaction, language, itarlegt=True)
+            detailed = interaction.response.send_message.call_args
+            assert "HF" in detailed.args[0] and "GIRO" in detailed.args[0]
+            assert detailed.kwargs["ephemeral"] is True
         monitor.latest = None
         await group.current.callback(group, interaction)
         assert interaction.response.send_message.call_args.kwargs["ephemeral"] is True
     asyncio.run(run())
+
+
+def test_compact_estimate_keeps_estimate_label_time_map_and_warnings():
+    estimate = FoF2Estimate(3.7, VALID)
+    for language in ("is", "en"):
+        text = estimate_text(estimate, language=language, now=NOW, checked_at=NOW)
+        assert "MHz" in text and "Reykjavík" in text and "22:30 UTC" in text
+        assert "prop.kc2g.com/fof2/" in text
+        assert "HF" not in text and "GIRO" not in text and "about/" not in text
+        assert "64.15" not in text
+        assert len(text) < 220
+        warned = estimate_text(estimate, language=language, now=NOW + timedelta(hours=1), source_error=True)
+        assert warned.count("⚠️") == 2
 
 
 def test_monitor_updates_corrections_but_rejects_regression():

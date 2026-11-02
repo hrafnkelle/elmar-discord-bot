@@ -12,7 +12,9 @@ Elmar is named for the amateur radio tradition of mentoring newly licensed opera
 - `/kallmerki velja lengd:2` — suggest a two-letter suffix.
 - Both commands accept `tungumal:English`. Replies default to Icelandic and are visible only to the person invoking the command.
 - `/kindex nuna` — show the latest published provisional local K-index at Leirvogur, its UTC observation interval, graph and source. This reply is visible only to the requester and also accepts `tungumal:English`. Callsign replies remain private.
-- `/fof2 nuna` — show KC2G's estimated ionospheric critical frequency near Reykjavík in MHz, with model valid time, age and map link. Only the requester sees the reply. Use `tungumal:English` for English.
+- `/fof2 nuna` — show KC2G's estimated ionospheric critical frequency near Reykjavík in MHz, with model valid time and map link. Only the requester sees the reply. Use `tungumal:English` for English.
+
+`/kindex nuna` and `/fof2 nuna` default to a concise value, time and graph/map link. Add `itarlegt:true` to either command for explanations, full source details and check times (plus model age/coordinates for foF2). Stale-data and source-failure warnings appear in both modes. Both modes reply privately; scheduled K-index alerts keep their existing format.
 
 Unlisted suffixes reply **Virðist laust samkvæmt kallmerkjaskrá ÍRA**, with the source and register date. Allocation must be confirmed by Fjarskiptastofa. Selection is uniform over unlisted A–Z combinations of the requested length; single-letter and special allocations are excluded. Suggestions contain no digit. TF0 is outside ordinary allocation.
 
@@ -60,7 +62,7 @@ See the [feature design](docs/k-index-feature.md) and [source research](docs/res
 
 `/fof2 nuna` uses the [KC2G assimilated model](https://prop.kc2g.com/fof2/) at a fixed reference location near Reykjavík, **64.15° N, 21.94° W**. It downloads the numerical HDF5 grid, reads the embedded UTC valid time, and bilinearly interpolates the surrounding one-degree cells. The result is explicitly labelled an **estimate**, rounded to one decimal place in MHz. It is neither a direct Icelandic ionosonde measurement nor a value applicable to the whole island.
 
-The F2-layer vertical critical frequency is different from the maximum usable frequency for a long-distance path. The reply briefly explains this and links the map and model description; it does not promise that an HF band is open. Both Icelandic and English replies are private, including unavailable-data responses. No foF2 alerts or subscriptions are implemented.
+The F2-layer vertical critical frequency is different from the maximum usable frequency for a long-distance path. With `itarlegt:true`, the reply explains this and adds the model description link; it does not promise that an HF band is open. Both Icelandic and English replies are private, including unavailable-data responses. No foF2 alerts or subscriptions are implemented.
 
 A shared background task fetches the model every 15 minutes and uses conditional HTTP requests where supported. Commands read an in-memory cache, so repeated queries do not trigger downloads. HDF5 decoding runs off the Discord event loop. Source failures retain the last known estimate with a warning and use exponential backoff up to an hour. A model value older than 45 minutes is marked stale; the check uses its valid time, not the fetch time. Up to 15 minutes of future valid time is accepted for the provider's time-aligned nowcast; later forecasts are rejected. Data validity, grid shape, local missing values and download size are checked before use.
 

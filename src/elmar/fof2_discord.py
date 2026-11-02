@@ -10,15 +10,15 @@ from elmar.fof2 import ABOUT_URL, LATITUDE, LONGITUDE, MAP_URL, FoF2Estimate, Fo
 
 
 def estimate_text(estimate: FoF2Estimate | None, *, language: str = "is", now: datetime | None = None,
-                  source_error: bool = False, checked_at: datetime | None = None) -> str:
+                  source_error: bool = False, checked_at: datetime | None = None, detailed: bool = False) -> str:
     english = language == "en"
     now = now or datetime.now(UTC)
-    links = (f"[{'foF2 map' if english else 'foF2-kort'}](<{MAP_URL}>) · "
-             f"[{'About the model' if english else 'Um líkanið'}](<{ABOUT_URL}>)")
+    map_link = f"[{'foF2 map' if english else 'foF2-kort'}](<{MAP_URL}>)"
+    links = f"{map_link} · [{'About the model' if english else 'Um líkanið'}](<{ABOUT_URL}>)"
     if estimate is None:
         text = ("No KC2G foF2 estimate is available yet. Please try again later." if english else
                 "Ekkert foF2-mat frá KC2G er tiltækt enn. Reyndu aftur síðar.")
-        return f"{text}\n{links}"
+        return f"{text}\n{links if detailed else map_link}"
     mhz = f"{estimate.mhz:.1f}" if english else f"{estimate.mhz:.1f}".replace(".", ",")
     title = (f"**Estimated foF2 near Reykjavík: {mhz} MHz**" if english else
              f"**Áætluð foF2 við Reykjavík: {mhz} MHz**")
@@ -40,6 +40,8 @@ def estimate_text(estimate: FoF2Estimate | None, *, language: str = "is", now: d
     if source_error:
         warnings.append("⚠️ Source refresh failed; showing the cached estimate." if english else
                         "⚠️ Ekki tókst að uppfæra gögn frá gagnaveitu; sýni vistað mat.")
+    if not detailed:
+        return "\n".join((title, valid, *warnings, map_link))
     checked = (("Last checked: " if english else "Síðast kannað: ") + checked_at.strftime("%Y-%m-%d %H:%M UTC")) if checked_at else ""
     return "\n\n".join(part for part in (title, location, f"{valid}\n{age}", "\n".join(warnings),
                                          explanation, links, checked, "KC2G · GIRO / IRI") if part)
@@ -51,10 +53,10 @@ class FoF2Commands(app_commands.Group):
         self.monitor = monitor
 
     @app_commands.command(name="nuna", description="Sýna nýjasta foF2-mat við Reykjavík")
-    @app_commands.describe(tungumal="Tungumál svars")
+    @app_commands.describe(tungumal="Tungumál svars", itarlegt="Sýna útskýringar og ítarlegar heimildir")
     async def current(self, interaction: discord.Interaction,
-                      tungumal: Literal["íslenska", "English"] = "íslenska"):
+                      tungumal: Literal["íslenska", "English"] = "íslenska", itarlegt: bool = False):
         await interaction.response.send_message(
             estimate_text(self.monitor.latest, language="en" if tungumal == "English" else "is",
-                          source_error=self.monitor.source_error, checked_at=self.monitor.checked_at),
+                          source_error=self.monitor.source_error, checked_at=self.monitor.checked_at, detailed=itarlegt),
             ephemeral=True, allowed_mentions=discord.AllowedMentions.none(), suppress_embeds=True)
